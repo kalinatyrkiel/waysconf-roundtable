@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { QRCodeSVG } from 'qrcode.react'
 import tweetImage from './assets/joanna-maciejewska-tweet.png'
 import coIntelligenceCover from './assets/co-intelligence-book-cover.png'
 import bookCover from './assets/reverse-centaur-book-cover.png'
+import followUpQr from './assets/follow-up-qr.png'
 import './App.css'
 
 function CentaurIcon() {
@@ -143,7 +143,6 @@ function ExerciseOverview() {
           </div>
         ))}
       </div>
-      <p className="small-instruction">Last question skips pairs and goes straight to fours.</p>
     </>
   )
 }
@@ -457,11 +456,11 @@ const slides = [
     eyebrow: 'A practical test',
     content: (
       <>
-        <h2 className="slide-title">Can the practice survive beyond its inventor?</h2>
+        <h2 className="slide-title">Scale with caution</h2>
         <div className="test-grid">
           <div><span>Useful</span><p>Does it solve a real recurring problem?</p></div>
           <div><span>Usable</span><p>Can a teammate run it without you?</p></div>
-          <div><span>Trustworthy</span><p>Are inputs, review, and accountability clear?</p></div>
+          <div><span>Trustworthy</span><p>Who reviews? Who is accountable?</p></div>
           <div><span>Learnable</span><p>Does feedback improve the process over time?</p></div>
         </div>
       </>
@@ -493,16 +492,12 @@ const slides = [
       <div className="qr-layout">
         <div>
           <h2>Keep talking<br />after the room.</h2>
-          <p>Resources and follow-up</p>
-          <div className="placeholder-pill">Placeholder link — replace before presenting</div>
+          <p className="coral thank-you">Thank you!</p>
         </div>
         <div className="qr-card">
-          <QRCodeSVG
-            value="https://example.com/scaling-ai-in-design"
-            size={230}
-            bgColor="#ffffff"
-            fgColor="#050505"
-            level="M"
+          <img
+            src={followUpQr}
+            alt="QR code for roundtable follow-up notes"
           />
         </div>
       </div>
@@ -549,7 +544,7 @@ function App() {
       <section
         className={`slide ${slide.className ?? ''}`}
         onClick={(event) => {
-          if ((event.target as HTMLElement).closest('button')) return
+          if ((event.target as HTMLElement).closest('button, a')) return
           goTo(current + 1)
         }}
       >
@@ -562,17 +557,16 @@ function App() {
         <div className="slide-content" key={current}>{slide.content}</div>
         <footer className="slide-footer">
           <span>Kalina Tyrkiel-Szymańska</span>
-          <span>{String(current + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}</span>
+          <div className="slide-nav">
+            <button type="button" onClick={() => goTo(current - 1)} disabled={current === 0} aria-label="Previous slide">←</button>
+            <span>{String(current + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}</span>
+            <button type="button" onClick={() => goTo(current + 1)} disabled={current === slides.length - 1} aria-label="Next slide">→</button>
+          </div>
         </footer>
-      </section>
-
-      <nav className="deck-controls" aria-label="Slide navigation">
-        <button onClick={() => goTo(current - 1)} disabled={current === 0} aria-label="Previous slide">←</button>
-        <div className="progress-track">
+        <div className="progress-track" aria-hidden="true">
           <div className="progress-fill" style={{ width: `${((current + 1) / slides.length) * 100}%` }} />
         </div>
-        <button onClick={() => goTo(current + 1)} disabled={current === slides.length - 1} aria-label="Next slide">→</button>
-      </nav>
+      </section>
     </main>
   )
 }

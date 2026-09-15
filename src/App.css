@@ -19,14 +19,14 @@ button {
   min-height: 100svh;
   display: grid;
   place-items: center;
-  padding: 24px 24px 72px;
+  padding: 24px;
   background: #171717;
 }
 
 .slide {
   position: relative;
   isolation: isolate;
-  width: min(100%, calc((100svh - 112px) * 16 / 9));
+  width: min(100%, calc((100svh - 48px) * 16 / 9));
   aspect-ratio: 16 / 9;
   overflow: hidden;
   display: grid;
@@ -58,6 +58,28 @@ button {
 
 .slide-footer {
   color: var(--muted);
+}
+
+.slide-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.slide-nav button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.slide-nav button:disabled {
+  opacity: 0.28;
 }
 
 .intro-slide .slide-footer span:first-child {
@@ -772,67 +794,35 @@ blockquote {
 }
 
 .qr-layout p {
-  margin: 24px 0;
+  margin: 24px 0 0;
   color: var(--coral);
-  font-size: clamp(17px, 2vw, 28px);
+  font-size: clamp(22px, 2.6vw, 40px);
+  font-weight: 800;
 }
 
 .qr-card {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  max-width: min(100%, 280px);
   padding: clamp(16px, 2.2vw, 32px);
   background: white;
 }
 
-.qr-card svg {
+.qr-card img {
   display: block;
   width: clamp(140px, 19vw, 230px);
   height: auto;
 }
 
-.placeholder-pill {
-  display: inline-block;
-  padding: 10px 13px;
-  color: var(--black);
-  background: var(--coral);
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.deck-controls {
-  position: fixed;
-  z-index: 10;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%);
-  width: min(520px, calc(100% - 40px));
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 14px;
-  padding: 8px 10px;
-  background: rgba(5, 5, 5, 0.92);
-  border: 1px solid #424242;
-  border-radius: 999px;
-}
-
-.deck-controls button {
-  width: 36px;
-  height: 36px;
-  color: var(--white);
-  background: #292929;
-  border: 0;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.deck-controls button:disabled {
-  opacity: 0.28;
-}
-
 .progress-track {
-  height: 4px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
   overflow: hidden;
-  background: #424242;
-  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .progress-fill {
@@ -843,13 +833,13 @@ blockquote {
 
 @media (max-width: 720px) {
   .deck {
-    padding: 0 0 64px;
+    padding: 0;
     background: var(--black);
   }
 
   .slide {
     width: 100%;
-    min-height: calc(100svh - 64px);
+    min-height: 100svh;
     aspect-ratio: auto;
     box-shadow: none;
   }
