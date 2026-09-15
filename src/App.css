@@ -185,6 +185,7 @@ h2 {
   top: -36%;
   right: -12%;
   transform: rotate(18deg);
+  animation: blob-drift-one 20s cubic-bezier(0.34, 1.4, 0.64, 1) infinite;
 }
 
 .hero-slide .shape-two {
@@ -193,6 +194,55 @@ h2 {
   bottom: -38%;
   left: -12%;
   transform: rotate(-14deg);
+  animation: blob-drift-two 24s cubic-bezier(0.34, 1.4, 0.64, 1) infinite;
+}
+
+@keyframes blob-drift-one {
+  0%,
+  100% {
+    border-radius: 48% 52% 43% 57% / 58% 40% 60% 42%;
+    transform: rotate(18deg) translate3d(0, 0, 0) scale(1);
+  }
+  22% {
+    border-radius: 62% 38% 58% 42% / 40% 62% 38% 60%;
+    transform: rotate(28deg) translate3d(-7%, 6%, 0) scale(1.14);
+  }
+  34% {
+    border-radius: 52% 48% 46% 54% / 50% 48% 52% 50%;
+    transform: rotate(16deg) translate3d(-2%, 2%, 0) scale(0.96);
+  }
+  62% {
+    border-radius: 38% 62% 44% 56% / 64% 36% 58% 42%;
+    transform: rotate(8deg) translate3d(6%, -7%, 0) scale(1.12);
+  }
+  76% {
+    border-radius: 50% 50% 48% 52% / 46% 54% 46% 54%;
+    transform: rotate(20deg) translate3d(2%, -2%, 0) scale(0.97);
+  }
+}
+
+@keyframes blob-drift-two {
+  0%,
+  100% {
+    border-radius: 48% 52% 43% 57% / 58% 40% 60% 42%;
+    transform: rotate(-14deg) translate3d(0, 0, 0) scale(1);
+  }
+  18% {
+    border-radius: 36% 64% 58% 42% / 62% 38% 44% 56%;
+    transform: rotate(-4deg) translate3d(8%, -7%, 0) scale(1.16);
+  }
+  30% {
+    border-radius: 50% 50% 46% 54% / 48% 52% 48% 52%;
+    transform: rotate(-16deg) translate3d(2%, -2%, 0) scale(0.94);
+  }
+  58% {
+    border-radius: 64% 36% 40% 60% / 42% 58% 62% 38%;
+    transform: rotate(-24deg) translate3d(-7%, 8%, 0) scale(1.13);
+  }
+  72% {
+    border-radius: 46% 54% 52% 48% / 54% 46% 50% 50%;
+    transform: rotate(-12deg) translate3d(-2%, 3%, 0) scale(0.96);
+  }
 }
 
 .hero-slide .accent {
@@ -1078,6 +1128,10 @@ blockquote {
 
   .bounce-word {
     position: static;
+    animation: none !important;
+  }
+
+  .hero-slide .ambient-shape {
     animation: none !important;
   }
 }
