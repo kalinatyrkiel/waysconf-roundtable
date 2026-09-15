@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import tweetImage from './assets/joanna-maciejewska-tweet.png'
 import coIntelligenceCover from './assets/co-intelligence-book-cover.png'
 import bookCover from './assets/reverse-centaur-book-cover.png'
@@ -91,7 +91,7 @@ const questionSets = [
     'What does AI help with, and where does it make things worse?',
   ],
   [
-    'Scaling AI in your design team: what’s the one thing you’re good at?',
+    'Scaling AI in your design team: what’s the one thing that works well?',
     'What’s the one thing you’d improve?',
   ],
   [
@@ -223,7 +223,45 @@ function ExerciseTimer({
   )
 }
 
-const slides = [
+function FavoriteToolSlide({ revealed, dropping }: { revealed: boolean; dropping: boolean }) {
+  return (
+    <div className="favorite-tool">
+      <h2 className="display">
+        My favorite
+        <br />
+        design tool?
+      </h2>
+      <div className={`favorite-reveal${revealed ? ' is-in' : ''}`} aria-hidden={!revealed}>
+        <p className="favorite-answer">A comment.</p>
+        <p className={`vibe-line${dropping ? ' is-in' : ''}`} aria-hidden={!dropping}>
+          As we vibe code more, comments get harder to add…
+        </p>
+        <div className={`figma-comment${dropping ? ' is-dropping' : ''}`}>
+          <span className="figma-pin">1</span>
+          <article className="figma-thread">
+            <header>
+              <span className="figma-avatar">SK</span>
+              <div>
+                <strong>Susan Kare</strong>
+                <time>2m</time>
+              </div>
+            </header>
+            <p>I wonder if we should merge the 3 icons into one</p>
+          </article>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+type Slide = {
+  eyebrow: string
+  className?: string
+  builds?: number
+  content: ReactNode | ((build: number) => ReactNode)
+}
+
+const slides: Slide[] = [
   {
     eyebrow: 'WaysConf 2026 · Roundtable',
     content: (
@@ -270,7 +308,7 @@ const slides = [
   {
     eyebrow: 'Wrong direction',
     content: (
-      <figure className="media-frame">
+      <figure className="media-frame tweet-frame">
         <img
           src={tweetImage}
           alt="Tweet by Joanna Maciejewska: the biggest problem with pushing all-things-AI is the wrong direction. She wants AI to do laundry and dishes so she can do art and writing, not the reverse."
@@ -440,6 +478,43 @@ const slides = [
     ),
   },
   {
+    eyebrow: 'The real tool',
+    builds: 2,
+    content: (build) => (
+      <FavoriteToolSlide revealed={build >= 1} dropping={build >= 2} />
+    ),
+    className: 'statement-slide',
+  },
+  {
+    eyebrow: 'From solitary to shared',
+    content: (
+      <>
+        <h2 className="slide-title wide-title">From solitary work with AI to AI-powered team work</h2>
+        <div className="comparison">
+          <article>
+            <span className="card-label">Personal habit</span>
+            <h3>Prototype and share link</h3>
+            <ul>
+              <li>I work together with AI</li>
+              <li>No way to add contextual comments</li>
+              <li className="emphasis">Work is fast – and isolated</li>
+            </ul>
+          </article>
+          <div className="arrow">→</div>
+          <article className="featured-card">
+            <span className="card-label">Shared ritual</span>
+            <h3>Share a prototype, ask for comments</h3>
+            <ul>
+              <li>Use tools to add comments on AI prototypes</li>
+              <li>Collaborate with engineering, PMs…</li>
+              <li className="emphasis">Keep the teamwork alive</li>
+            </ul>
+          </article>
+        </div>
+      </>
+    ),
+  },
+  {
     eyebrow: 'Scaling is a systems problem',
     content: (
       <>
@@ -447,25 +522,10 @@ const slides = [
         <div className="scale-steps">
           <div><span>01</span><strong>Individual</strong><p>A useful prompt</p></div>
           <div><span>02</span><strong>Team</strong><p>A repeatable practice</p></div>
-          <div><span>03</span><strong>System</strong><p>Guardrails + feedback</p></div>
+          <div><span>03</span><strong>System</strong><p>Rituals + rules + feedback</p></div>
         </div>
       </>
     ),
-  },
-  {
-    eyebrow: 'A practical test',
-    content: (
-      <>
-        <h2 className="slide-title">Scale with caution</h2>
-        <div className="test-grid">
-          <div><span>Useful</span><p>Does it solve a real recurring problem?</p></div>
-          <div><span>Usable</span><p>Can a teammate run it without you?</p></div>
-          <div><span>Trustworthy</span><p>Who reviews? Who is accountable?</p></div>
-          <div><span>Learnable</span><p>Does feedback improve the process over time?</p></div>
-        </div>
-      </>
-    ),
-    className: 'blue-slide',
   },
   {
     eyebrow: '1–2–4–All',
@@ -511,12 +571,36 @@ function App() {
     return hash >= 1 && hash <= slides.length ? hash - 1 : 0
   }, [])
   const [current, setCurrent] = useState(initialSlide)
+  const [build, setBuild] = useState(0)
+  const slide = slides[current]
+  const maxBuild = slide.builds ?? 0
+  const content = typeof slide.content === 'function' ? slide.content(build) : slide.content
 
   const goTo = useCallback((index: number) => {
     const next = Math.min(Math.max(index, 0), slides.length - 1)
     setCurrent(next)
+    setBuild(0)
     window.history.replaceState(null, '', `#${next + 1}`)
   }, [])
+
+  const advance = useCallback(() => {
+    if (build < maxBuild) {
+      setBuild((value) => value + 1)
+      return
+    }
+    goTo(current + 1)
+  }, [build, maxBuild, current, goTo])
+
+  const retreat = useCallback(() => {
+    if (build > 0) {
+      setBuild((value) => value - 1)
+      return
+    }
+    const previous = Math.max(current - 1, 0)
+    setBuild(slides[previous].builds ?? 0)
+    setCurrent(previous)
+    window.history.replaceState(null, '', `#${previous + 1}`)
+  }, [build, current])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -524,20 +608,18 @@ function App() {
       if (target.tagName === 'BUTTON') return
       if (['ArrowRight', 'ArrowDown', ' ', 'PageDown'].includes(event.key)) {
         event.preventDefault()
-        goTo(current + 1)
+        advance()
       }
       if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(event.key)) {
         event.preventDefault()
-        goTo(current - 1)
+        retreat()
       }
       if (event.key === 'Home') goTo(0)
       if (event.key === 'End') goTo(slides.length - 1)
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [current, goTo])
-
-  const slide = slides[current]
+  }, [advance, retreat, goTo])
 
   return (
     <main className="deck">
@@ -545,7 +627,7 @@ function App() {
         className={`slide ${slide.className ?? ''}`}
         onClick={(event) => {
           if ((event.target as HTMLElement).closest('button, a')) return
-          goTo(current + 1)
+          advance()
         }}
       >
         <div className="ambient-shape shape-one" />
@@ -554,13 +636,13 @@ function App() {
           <span className="wordmark">WaysConf 2026</span>
           <span>Roundtable</span>
         </header>
-        <div className="slide-content" key={current}>{slide.content}</div>
+        <div className="slide-content">{content}</div>
         <footer className="slide-footer">
           <span>Kalina Tyrkiel-Szymańska</span>
           <div className="slide-nav">
-            <button type="button" onClick={() => goTo(current - 1)} disabled={current === 0} aria-label="Previous slide">←</button>
+            <button type="button" onClick={() => retreat()} disabled={current === 0 && build === 0} aria-label="Previous slide">←</button>
             <span>{String(current + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}</span>
-            <button type="button" onClick={() => goTo(current + 1)} disabled={current === slides.length - 1} aria-label="Next slide">→</button>
+            <button type="button" onClick={() => advance()} disabled={current === slides.length - 1 && build >= maxBuild} aria-label="Next slide">→</button>
           </div>
         </footer>
         <div className="progress-track" aria-hidden="true">
