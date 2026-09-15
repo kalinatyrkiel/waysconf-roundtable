@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import tweetImage from './assets/joanna-maciejewska-tweet.png'
 import coIntelligenceCover from './assets/co-intelligence-book-cover.png'
@@ -84,44 +85,78 @@ function CyborgIcon() {
   )
 }
 
-const exerciseQuestion =
-  'What is one AI practice your team could adopt next week — and what would make it trustworthy?'
+const questionSets = [
+  [
+    'What are your centaur and reverse centaur tasks?',
+    'What does AI help with, and where does it make things worse?',
+  ],
+  [
+    'Scaling AI in your design team: what’s the one thing you’re good at?',
+    'What’s the one thing you’d improve?',
+  ],
+  [
+    'Getting closer to the centaur: what’s the one thing you want to try after this discussion?',
+  ],
+]
+
+const bouncingTerms = [
+  { word: 'Claude skills', lane: 0, drift: 0.05, dx: 7.5, dy: 5.3, offsetX: -1.2, offsetY: -3.9 },
+  { word: 'Figma skills', lane: 0.17, drift: -0.05, dx: 9.4, dy: 6.7, offsetX: -6.8, offsetY: -1.1 },
+  { word: '.md files', lane: 0.33, drift: 0.05, dx: 8.1, dy: 5.9, offsetX: -3.4, offsetY: -5.6 },
+  { word: 'automations', lane: 0.5, drift: -0.05, dx: 10.6, dy: 7.3, offsetX: -9.2, offsetY: -2.8 },
+  { word: 'workflows', lane: 0.67, drift: 0.05, dx: 8.8, dy: 6.1, offsetX: -4.7, offsetY: -6.4 },
+  { word: 'evals', lane: 0.83, drift: -0.05, dx: 9.9, dy: 6.9, offsetX: -8.3, offsetY: -0.7 },
+  { word: '(and many more)', lane: 1, drift: -0.04, dx: 11.2, dy: 7.8, offsetX: -5.9, offsetY: -4.6, white: true },
+]
 
 const timerStages = [
-  { label: '1 · Think', seconds: 60 },
-  { label: '2 · Pair', seconds: 120 },
-  { label: '4 · Four', seconds: 240 },
-  { label: 'All · Share', seconds: 0 },
+  { label: '1 · Think', seconds: 120 },
+  { label: '2 · Person 1', seconds: 120 },
+  { label: '2 · Person 2', seconds: 120 },
+  { label: '4 · Four', seconds: 180 },
+  { label: 'All · Share', seconds: 240 },
 ]
+
+const harvestStages = timerStages.filter((stage) => !stage.label.includes('Person'))
 
 function ExerciseOverview() {
   const stages = [
-    ['1', 'Think alone', '1 min'],
-    ['2', 'Compare in pairs', '2 min'],
-    ['4', 'Build in fours', '4 min'],
-    ['ALL', 'Share patterns', 'Together'],
+    ['1', 'Think alone', '2 min'],
+    ['2', 'Compare in pairs', '4 min (2 min per person)'],
+    ['4', 'Discuss in fours', '3 min'],
+    ['ALL', 'Share findings', '4 min'],
   ]
 
   return (
     <>
-      <h2 className="slide-title">Start alone. Build together.</h2>
+      <h2 className="slide-title exercise-heading">
+        I give you 3 questions
+        <br />
+        <span className="coral">You discuss</span>
+      </h2>
       <div className="exercise-flow">
         {stages.map(([number, label, time]) => (
           <div className="exercise-step" key={number}>
             <span className="exercise-number">{number}</span>
             <strong>{label}</strong>
-            <small>{time}</small>
+            {time ? <small>{time}</small> : <small className="time-placeholder">&nbsp;</small>}
           </div>
         ))}
       </div>
-      <p className="small-instruction">One idea becomes a shared, practical next step.</p>
+      <p className="small-instruction">Last question skips pairs and goes straight to fours.</p>
     </>
   )
 }
 
-function ExerciseTimer() {
+function ExerciseTimer({
+  questions,
+  stages = timerStages,
+}: {
+  questions: string[]
+  stages?: typeof timerStages
+}) {
   const [stage, setStage] = useState(0)
-  const [remaining, setRemaining] = useState(timerStages[0].seconds)
+  const [remaining, setRemaining] = useState(stages[0].seconds)
   const [running, setRunning] = useState(false)
 
   useEffect(() => {
@@ -140,7 +175,7 @@ function ExerciseTimer() {
 
   const selectStage = (index: number) => {
     setStage(index)
-    setRemaining(timerStages[index].seconds)
+    setRemaining(stages[index].seconds)
     setRunning(false)
   }
 
@@ -150,7 +185,7 @@ function ExerciseTimer() {
   return (
     <div className="timer-layout">
       <div className="stage-tabs">
-        {timerStages.map((item, index) => (
+        {stages.map((item, index) => (
           <button
             key={item.label}
             className={stage === index ? 'active' : ''}
@@ -161,11 +196,22 @@ function ExerciseTimer() {
         ))}
       </div>
       <div className="timer-display" aria-live="polite">
-        {timerStages[stage].seconds === 0 ? 'ALL' : `${minutes}:${seconds}`}
+        {`${minutes}:${seconds}`}
       </div>
-      <p className="timer-question">{exerciseQuestion}</p>
+      <div className="timer-copy">
+        {stages[stage].label.includes('Person') && (
+          <p className="speaker-cue">
+            {stages[stage].label.includes('1') ? 'Person 1 speaks' : 'Person 2 speaks'}
+          </p>
+        )}
+        <div className="timer-question">
+          {questions.map((question) => (
+            <p key={question}>{question}</p>
+          ))}
+        </div>
+      </div>
       <div className="timer-actions">
-        {timerStages[stage].seconds > 0 && (
+        {stages[stage].seconds > 0 && (
           <button className="primary-button" onClick={() => setRunning(!running)}>
             {running ? 'Pause' : remaining === 0 ? 'Restart' : 'Start'}
           </button>
@@ -188,7 +234,7 @@ const slides = [
           <br />
           <span className="accent">design processes</span>
         </h1>
-        <p className="lede">From personal prompting to reliable team practice.</p>
+        <p className="lede">From pro tips to happy teams.</p>
       </>
     ),
     className: 'hero-slide',
@@ -202,15 +248,25 @@ const slides = [
           <p className="role">Content Designer & UX Writing Trainer</p>
           <p className="company">Zendesk</p>
         </div>
-        <div className="intro-statement">
-          <p>
-            I mostly taught writing.
-            <br />
-            <strong>Now I mostly teach AI.</strong>
-          </p>
+        <div className="intro-stack">
+          <div className="intro-statement is-light">
+            <p>
+              I design AI tools.
+              <br />
+              I design with AI, too.
+            </p>
+          </div>
+          <div className="intro-statement">
+            <p>
+              I mostly taught writing.
+              <br />
+              <strong>Now I mostly teach AI.</strong>
+            </p>
+          </div>
         </div>
       </div>
     ),
+    className: 'intro-slide',
   },
   {
     eyebrow: 'Wrong direction',
@@ -292,7 +348,7 @@ const slides = [
           <h2>
             The machine decides.
             <br />
-            <span className="coral">The human absorbs the mess.</span>
+            <span className="coral">The human takes the blame.</span>
           </h2>
         </div>
         <div className="mode-cards">
@@ -312,7 +368,7 @@ const slides = [
             </div>
             <p>
               Someone prompts without context and ships the copy. You keep
-              cleaning up the mess.
+              fixing what ships.
             </p>
           </article>
         </div>
@@ -325,12 +381,31 @@ const slides = [
     content: (
       <>
         <h2 className="display">
-          We all know how to
+          <span className="prompt-line">
+            We all know how to <span className="coral">write a prompt.</span>
+          </span>
           <br />
-          <span className="coral">write a prompt.</span>
+          But what about:
         </h2>
-        <div className="bottom-note">
-          <span>But a clever prompt is not a process.</span>
+        <div className="bounce-words" aria-label="Claude skills, Figma skills, markdown files, automations, workflows, evals, and many more">
+          {bouncingTerms.map(({ word, lane, drift, dx, dy, offsetX, offsetY, white }) => (
+            <span
+              className={white ? 'bounce-word is-white' : 'bounce-word'}
+              key={word}
+              style={
+                {
+                  '--x-end': `calc(100% - ${word.length + 1}ch)`,
+                  '--y-start': `calc((100% - 1em) * ${lane})`,
+                  '--y-end': `calc((100% - 1em) * ${Math.min(Math.max(lane + drift, 0), 1)})`,
+                  '--dx': `${dx}s`,
+                  '--dy': `${dy}s`,
+                  animationDelay: `${offsetX}s, ${offsetY}s`,
+                } as CSSProperties
+              }
+            >
+              {word}
+            </span>
+          ))}
         </div>
       </>
     ),
@@ -340,29 +415,28 @@ const slides = [
     eyebrow: 'Content design · a placeholder story',
     content: (
       <>
-        <h2 className="slide-title">From prompt trick to team capability</h2>
+        <h2 className="slide-title wide-title">From personal prompts to team capabilities</h2>
         <div className="comparison">
           <article>
-            <span className="card-label">Personal shortcut</span>
-            <h3>“Rewrite this error message.”</h3>
+            <span className="card-label">Personal habit</span>
+            <h3>“Give me 3 versions of this tooltip”</h3>
             <ul>
-              <li>Fast output</li>
-              <li>Hidden context</li>
-              <li>Inconsistent review</li>
+              <li>I explore options</li>
+              <li>I know what’s good</li>
+              <li className="emphasis">I make the final decision</li>
             </ul>
           </article>
           <div className="arrow">→</div>
           <article className="featured-card">
             <span className="card-label">Shared pattern</span>
-            <h3>Critique against agreed content standards.</h3>
+            <h3>Validate against standards</h3>
             <ul>
-              <li>Context travels with the task</li>
-              <li>Quality criteria are visible</li>
-              <li>A person owns the final call</li>
+              <li>Universal context</li>
+              <li>Tool-agnostic workflows</li>
+              <li className="emphasis">Good work happens when you’re not in the room</li>
             </ul>
           </article>
         </div>
-        <p className="placeholder-note">Replace with a real Kalina story before presenting.</p>
       </>
     ),
   },
@@ -399,44 +473,26 @@ const slides = [
     content: <ExerciseOverview />,
   },
   {
-    eyebrow: 'Your question',
-    content: (
-      <>
-        <blockquote>{exerciseQuestion}</blockquote>
-        <p className="small-instruction">
-          Be specific: name the practice, the people, and the smallest useful first step.
-        </p>
-      </>
-    ),
-    className: 'question-slide',
-  },
-  {
     eyebrow: '1–2–4–All · Facilitation',
-    content: <ExerciseTimer />,
+    content: <ExerciseTimer questions={questionSets[0]} />,
     className: 'timer-slide',
   },
   {
-    eyebrow: 'Bring it back',
-    content: (
-      <>
-        <h2 className="display">
-          Scale the <span className="accent">conditions</span>,
-          <br />not only the tool.
-        </h2>
-        <div className="closing-prompts">
-          <span>What will you try?</span>
-          <span>Who needs to shape it?</span>
-          <span>How will you know it works?</span>
-        </div>
-      </>
-    ),
+    eyebrow: '1–2–4–All · Facilitation',
+    content: <ExerciseTimer questions={questionSets[1]} />,
+    className: 'timer-slide',
+  },
+  {
+    eyebrow: '1–2–4–All · Facilitation',
+    content: <ExerciseTimer questions={questionSets[2]} stages={harvestStages} />,
+    className: 'timer-slide',
   },
   {
     eyebrow: 'Continue the conversation',
     content: (
       <div className="qr-layout">
         <div>
-          <h2>Take the question<br />back to your team.</h2>
+          <h2>Keep talking<br />after the room.</h2>
           <p>Resources and follow-up</p>
           <div className="placeholder-pill">Placeholder link — replace before presenting</div>
         </div>
@@ -503,9 +559,9 @@ function App() {
           <span className="wordmark">WaysConf 2026</span>
           <span>Roundtable</span>
         </header>
-        <div className="slide-content">{slide.content}</div>
+        <div className="slide-content" key={current}>{slide.content}</div>
         <footer className="slide-footer">
-          <span>Building what matters</span>
+          <span>Kalina Tyrkiel-Szymańska</span>
           <span>{String(current + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}</span>
         </footer>
       </section>
